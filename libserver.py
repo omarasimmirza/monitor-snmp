@@ -1,16 +1,12 @@
-from fastapi import UploadFile
 import mysql
 import paramiko 
-import sys, os 
-from tempfile import TemporaryDirectory
 import smtplib
 from email.message import EmailMessage
-import Crypto
 import xml.etree.cElementTree as et
-import getpass
+# import getpass
 
 class SystemCheck:
-    def __init__(self, ip, port, user, password, mail):
+    def __init__(self, ip=None, port=None, user=None, password=None, mail=None):
         self.ip = ip 
         self.port = port 
         self.user = user 
@@ -19,19 +15,25 @@ class SystemCheck:
         self.type = ""
         self.limit = ""
 
+    def print_self(self):
+        print(self.ip)
+        print(self.port)
+        print(self.user)
+        print(self.password)
+        print(self.mail)
+
     def parse_xml(self, filename):
         try:
             tree = et.parse(filename)
             root = tree.getroot()
             client_num = len(root)
-            print("\nThe number of total clients are: ", client_num)
+            print("The number of total clients are: ", client_num)
             for child in root:
-                self = SystemCheck(
-                    child.attrib.get("id"), 
-                    child.attrib.get("port"), 
-                    child.attrib.get("username"), 
-                    child.attrib.get("password"), 
-                    child.attrib.get("mail"))
+                self.ip = child.attrib.get("ip")
+                self.port = int(child.attrib.get("port"))
+                self.user = child.attrib.get("username")
+                self.password = child.attrib.get("password")
+                self.mail = child.attrib.get("mail")
                 if len(child) > 0:
                     for alert_child in child:
                         self.type = alert_child.attrib.get("type")
@@ -43,8 +45,10 @@ class SystemCheck:
             print("Error: XML file not found.")
 
     def upload_file(self):
-        remotepath = "info-client.py"
-        path = r"C:\Users\Administrator\Documents\crossover-proj\info-client.py"
+        client_file = "info-client.py"
+        client_lib = "libclient.py"
+        path_file = r"C:\Users\Administrator\Documents\crossover-proj\info-client.py"
+        path_lib = r"C:\Users\Administrator\Documents\crossover-proj\libclient.py"
         try:
             client = paramiko.Transport((self.ip, self.port))
             client.banner_timeout = 10
@@ -52,7 +56,8 @@ class SystemCheck:
             sftp = paramiko.SFTPClient.from_transport(client)
             sftp.mkdir('upload')
             sftp.chdir('upload')
-            sftp.put(path, remotepath)
+            sftp.put(path_file, client_file)
+            sftp.put(path_lib, client_lib)
             sftp.close()
             client.close()
         except Exception as e:
@@ -63,11 +68,10 @@ class SystemCheck:
         client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         client.connect(self.ip, self.port, self.user, self.password)
         self.upload_file()       
-        client.exec_command("cd upload/")
-        client.exec_command("python3 info-client.py") #Take a look at this buddy.
+        stdin, stdout, stderr = client.exec_command("cd upload/;python3 info-client.py")
+        for lines in stdout.readlines():
+            print(lines)
+        for lines in stderr.readlines():
+            print(lines)
+        client.exec_command('sudo rm -rf upload/')
         client.close()
-    
-    
-
-
-
