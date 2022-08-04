@@ -1,0 +1,11 @@
+<?xml version='1.0' encoding='utf-8'?>
+<data>
+    <client ip='127.0.0.1' port='65432' username='omar' password='password' mail='something@gmail.com'>
+        <alert type="memory" limit="50%"/>
+        <alert type="cpu" limit="20%"/>
+    </client>
+    <client ip='127.0.0.1' port='65432' username='omar' password='password' mail='something@gmail.com'>
+        <alert type="memory" limit="50%"/>
+        <alert type="cpu" limit="20%"/>
+    </client>
+</data>
