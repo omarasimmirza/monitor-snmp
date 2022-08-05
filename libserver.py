@@ -1,8 +1,9 @@
 import mysql
 import paramiko 
-import smtplib
 from email.message import EmailMessage
 import xml.etree.cElementTree as et
+from cryptography.fernet import Fernet
+from datetime import datetime
 # import getpass
 
 class SystemCheck:
@@ -63,15 +64,38 @@ class SystemCheck:
         except Exception as e:
             print(e)
 
+    def decrypt_data(self, key, data):
+        decrypt = Fernet(key.encode())
+        return decrypt.decrypt(data.encode()).decode()
+
+    def convert_time(self, time):
+        day = time // (24 * 3600)
+        time = time % (24 * 3600)
+        hour = time // 3600
+        time %= 3600
+        minutes = time // 60
+        time %= 60
+        seconds = time
+        print(f"{day} day(s) {hour} hour(s) {minutes} minute(s) {seconds} second(s)")
+
     def ssh_connect(self):
+        out_list = []
         client = paramiko.SSHClient()
         client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         client.connect(self.ip, self.port, self.user, self.password)
         self.upload_file()       
         stdin, stdout, stderr = client.exec_command("cd upload/;python3 info-client.py")
         for lines in stdout.readlines():
-            print(lines)
+            out_list.append(lines)
         for lines in stderr.readlines():
             print(lines)
+        result_str = self.decrypt_data(out_list[0], out_list[1])
+        result_list = result_str.split(':', -1)
+        memory_used = float(result_list[0])
+        cpu_used = float(result_list[1])
+        total_uptime = float(result_list[2]) / 100.0
+        self.convert_time(total_uptime)
+        print(cpu_used)
+        print(memory_used)
         client.exec_command('sudo rm -rf upload/')
         client.close()
