@@ -25,7 +25,7 @@ class Stats:
         cmdGen = cmdgen.CommandGenerator()
         errorIndication, errorStatus, errorIndex, varBinds = cmdGen.nextCmd(
             cmdgen.CommunityData('public'),
-            cmdgen.UdpTransportTarget(('localhost', 161)),
+            cmdgen.UdpTransportTarget(('10.8.128.39', 161)),
             oid
         )
         if errorIndication:
@@ -74,4 +74,6 @@ class Stats:
         combine = str(self.memory_used) + ':' + str(self.cpu_used) + ':' + str(self.total_uptime)
         self.key = Fernet.generate_key()
         cipher = Fernet(self.key)
-        self.encrypt_data = cipher.encrypt(combine)
+        self.encrypt_data = cipher.encrypt(combine.encode("utf-8"))
+        print(self.key.decode())
+        print(self.encrypt_data.decode())
