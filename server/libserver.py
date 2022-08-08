@@ -3,7 +3,6 @@ import paramiko
 from email.message import EmailMessage
 import xml.etree.cElementTree as et
 from cryptography.fernet import Fernet
-from datetime import datetime
 # import getpass
 
 class SystemCheck:
@@ -48,8 +47,8 @@ class SystemCheck:
     def upload_file(self):
         client_file = "info-client.py"
         client_lib = "libclient.py"
-        path_file = r"C:\Users\Administrator\Documents\crossover-proj\info-client.py"
-        path_lib = r"C:\Users\Administrator\Documents\crossover-proj\libclient.py"
+        path_file = r"C:\Users\Administrator\Documents\crossover-proj\client\info-client.py"
+        path_lib = r"C:\Users\Administrator\Documents\crossover-proj\client\libclient.py"
         try:
             client = paramiko.Transport((self.ip, self.port))
             client.banner_timeout = 10
