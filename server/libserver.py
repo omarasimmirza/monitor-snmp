@@ -1,4 +1,3 @@
-import mysql
 import paramiko 
 from email.message import EmailMessage
 import xml.etree.cElementTree as et
