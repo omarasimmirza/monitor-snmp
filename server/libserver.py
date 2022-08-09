@@ -44,9 +44,9 @@ class SystemCheck:
             print("Error: XML file not found.")
 
     def upload_file(self):
-        client_file = "info-client.py"
+        client_file = "info_client.py"
         client_lib = "libclient.py"
-        path_file = r"C:\Users\Administrator\Documents\crossover-proj\client\info-client.py"
+        path_file = r"C:\Users\Administrator\Documents\crossover-proj\client\info_client.py"
         path_lib = r"C:\Users\Administrator\Documents\crossover-proj\client\libclient.py"
         try:
             client = paramiko.Transport((self.ip, self.port))
@@ -82,18 +82,19 @@ class SystemCheck:
         client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         client.connect(self.ip, self.port, self.user, self.password)
         self.upload_file()       
-        stdin, stdout, stderr = client.exec_command("cd upload/;python3 info-client.py")
+        stdin, stdout, stderr = client.exec_command("cd upload/;python3 info_client.py")
         for lines in stdout.readlines():
             out_list.append(lines)
         for lines in stderr.readlines():
             print(lines)
         result_str = self.decrypt_data(out_list[0], out_list[1])
         result_list = result_str.split(':', -1)
-        memory_used = float(result_list[0])
-        cpu_used = float(result_list[1])
-        total_uptime = float(result_list[2]) / 100.0
-        self.convert_time(total_uptime)
-        print(cpu_used)
-        print(memory_used)
+        # memory_used = float(result_list[0])
+        # cpu_used = float(result_list[1])
+        # total_uptime = float(result_list[2]) / 100.0
+        # self.convert_time(total_uptime)
+        # print(cpu_used)
+        # print(memory_used)
         client.exec_command('sudo rm -rf upload/')
         client.close()
+        return result_list
