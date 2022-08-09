@@ -2,7 +2,6 @@ import paramiko
 from email.message import EmailMessage
 import xml.etree.cElementTree as et
 from cryptography.fernet import Fernet
-# import getpass
 
 class SystemCheck:
     def __init__(self, ip=None, port=None, user=None, password=None, mail=None):
