@@ -1,7 +1,9 @@
 import paramiko 
-from email.message import EmailMessage
+import smtplib, ssl
 import xml.etree.cElementTree as et
 from cryptography.fernet import Fernet
+from dotenv import load_dotenv
+import os
 
 class SystemCheck:
     def __init__(self, ip=None, port=None, user=None, password=None, mail=None):
@@ -22,10 +24,11 @@ class SystemCheck:
 
     def parse_xml(self, filename):
         try:
+            list_of_machines = []
             tree = et.parse(filename)
             root = tree.getroot()
-            client_num = len(root)
-            print("The number of total clients are: ", client_num)
+            # client_num = len(root)
+            # print("The number of total clients are: ", client_num)
             for child in root:
                 self.ip = child.attrib.get("ip")
                 self.port = int(child.attrib.get("port"))
@@ -39,8 +42,10 @@ class SystemCheck:
                             self.limit = alert_child.attrib.get("limit")
                         elif self.type == "cpu":
                             self.limit = alert_child.attrib.get("limit")
+                list_of_machines.append(self)
         except Exception:
             print("Error: XML file not found.")
+        return list_of_machines
 
     def upload_file(self):
         client_file = "info_client.py"
@@ -88,12 +93,27 @@ class SystemCheck:
             print(lines)
         result_str = self.decrypt_data(out_list[0], out_list[1])
         result_list = result_str.split(':', -1)
-        # memory_used = float(result_list[0])
-        # cpu_used = float(result_list[1])
-        # total_uptime = float(result_list[2]) / 100.0
-        # self.convert_time(total_uptime)
-        # print(cpu_used)
-        # print(memory_used)
         client.exec_command('sudo rm -rf upload/')
         client.close()
         return result_list
+
+    def email_user(self):
+        load_dotenv()
+        sender_email = str(os.environ.get('email_app_sender'))  # Enter your address
+        receiver_email = str(self.mail)  # Enter receiver address
+        password = str(os.environ.get('email_app_pass'))
+
+        port = 587  # For starttls
+        smtp_server = "smtp.gmail.com"
+        message = f"""\
+        Python crossover project.
+
+        [ALERT]:\ntype: {self.type}\nlimit: {self.limit}\n"""
+
+        context = ssl.create_default_context()
+        with smtplib.SMTP(smtp_server, port) as server:
+            server.ehlo()  # Can be omitted
+            server.starttls(context=context)
+            server.ehlo()  # Can be omitted
+            server.login(sender_email, password)
+            server.sendmail(sender_email, receiver_email, message)
