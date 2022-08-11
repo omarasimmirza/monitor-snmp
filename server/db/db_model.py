@@ -12,7 +12,7 @@ class Stats(base):
     cpu_uptime = Column(Float)
     cpu_usage = Column(Float)
     memory_usage = Column(Float)
-    alert_type = Column(String(255))
-    alert_limit = Column(String(255))
+    # alert_type = Column(String(255))
+    # alert_limit = Column(String(255))
 
 base.metadata.create_all(engine)
